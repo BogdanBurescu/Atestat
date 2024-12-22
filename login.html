@@ -4,6 +4,7 @@
     <title>Blackjack Strategy - Login</title>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-firestore.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -63,6 +64,11 @@
             background-color: #45a049;
         }
 
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
         .error-message {
             color: #ff0000;
             margin-top: 10px;
@@ -75,50 +81,110 @@
         // Initialize Firebase with your project's config
         var firebaseConfig = {
             apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
-    authDomain: "blackyjacky-7ec67.firebaseapp.com",
-    projectId: "blackyjacky-7ec67",
-    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
-    messagingSenderId: "72969183815",
-    appId: "1:72969183815:web:2b075f407839a7176d0762",
-    measurementId: "G-KVC53GB5TC"
+            authDomain: "blackyjacky-7ec67.firebaseapp.com",
+            projectId: "blackyjacky-7ec67",
+            storageBucket: "blackyjacky-7ec67.firebasestorage.app",
+            messagingSenderId: "72969183815",
+            appId: "1:72969183815:web:2b075f407839a7176d0762",
+            measurementId: "G-KVC53GB5TC"
         };
         firebase.initializeApp(firebaseConfig);
+
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Function to generate a unique device ID
+        function generateDeviceId() {
+            const userAgent = navigator.userAgent;
+            const platform = navigator.platform;
+            const screenResolution = `${window.screen.width}x${window.screen.height}`;
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            
+            // Combine all factors and create a hash
+            const deviceString = `${userAgent}-${platform}-${screenResolution}-${timeZone}`;
+            let hash = 0;
+            for (let i = 0; i < deviceString.length; i++) {
+                const char = deviceString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // Function to check device authorization
+        async function checkDeviceAuthorization(user) {
+            const deviceId = generateDeviceId();
+            const userRef = db.collection('users').doc(user.uid);
+            
+            try {
+                const doc = await userRef.get();
+                
+                if (!doc.exists) {
+                    // First time login, register device
+                    await userRef.set({
+                        email: user.email,
+                        authorizedDevice: deviceId,
+                        firstLogin: new Date()
+                    });
+                    return true;
+                } else {
+                    // Check if this is the authorized device
+                    const userData = doc.data();
+                    return userData.authorizedDevice === deviceId;
+                }
+            } catch (error) {
+                console.error("Error checking device authorization:", error);
+                return false;
+            }
+        }
 
         // Function to check if a user is logged in or not
         function checkAuthState() {
             firebase.auth().onAuthStateChanged(function(user) {
                 if (user) {
-                    // User is signed in, proceed to the website
-                    window.location.href = "index.html";
+                    checkDeviceAuthorization(user).then(isAuthorized => {
+                        if (isAuthorized) {
+                            window.location.href = "index.html";
+                        } else {
+                            // Logout unauthorized device
+                            firebase.auth().signOut();
+                            const errorDiv = document.getElementById("error-message");
+                            errorDiv.textContent = "This device is not authorized to access this account. Please use your registered device.";
+                            errorDiv.style.display = "block";
+                        }
+                    });
                 }
             });
         }
 
         // Function to handle the login form submission
-        function login() {
+        async function login() {
             var email = document.getElementById("email").value;
             var password = document.getElementById("password").value;
             var errorDiv = document.getElementById("error-message");
+            var loginButton = document.getElementById("login-button");
             
             // Show loading state
-            document.getElementById("login-button").disabled = true;
-            document.getElementById("login-button").textContent = "Logging in...";
+            loginButton.disabled = true;
+            loginButton.textContent = "Logging in...";
+            errorDiv.style.display = "none";
 
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(function() {
-                    // Login successful, redirect to the homepage
+            try {
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const isAuthorized = await checkDeviceAuthorization(userCredential.user);
+                
+                if (isAuthorized) {
                     window.location.href = "index.html";
-                })
-                .catch(function(error) {
-                    // Handle errors here
-                    var errorMessage = error.message;
-                    errorDiv.textContent = errorMessage;
-                    errorDiv.style.display = "block";
-                    
-                    // Reset button state
-                    document.getElementById("login-button").disabled = false;
-                    document.getElementById("login-button").textContent = "Login";
-                });
+                } else {
+                    await firebase.auth().signOut();
+                    throw new Error("This device is not authorized to access this account. Please use your registered device.");
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = "block";
+                loginButton.disabled = false;
+                loginButton.textContent = "Login";
+            }
         }
 
         // Handle enter key press
