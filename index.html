@@ -113,7 +113,7 @@
         }
     </style>
 </head>
-<head>
+<body>
     <div id="authContent">
         <div id="loginForm">
             <div class="auth-container">
@@ -149,89 +149,9 @@
     <div id="mainContent">
         <button class="logout-btn" onclick="logout()">Logout</button>
         <div class="container">
-            <!-- Your existing game content will go here -->
-            <h1>Welcome to BlackyJacky</h1>
-            <!-- Rest of your game UI -->
-        </div>
-    </div>
-
-    <script>
-        // Initialize Firebase with your config
-        const firebaseConfig = {
-            apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
-    authDomain: "blackyjacky-7ec67.firebaseapp.com",
-    projectId: "blackyjacky-7ec67",
-    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
-    messagingSenderId: "72969183815",
-    appId: "1:72969183815:web:2b075f407839a7176d0762",
-    measurementId: "G-KVC53GB5TC"
-        };
-        firebase.initializeApp(firebaseConfig);
-
-        // Auth state observer
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in
-                document.getElementById('authContent').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
-            } else {
-                // User is signed out
-                document.getElementById('authContent').style.display = 'block';
-                document.getElementById('mainContent').style.display = 'none';
-            }
-        });
-
-        // Toggle between login and register forms
-        function toggleAuth() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-            }
-        }
-
-        // Login function
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorElement = document.getElementById('loginError');
-            
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    errorElement.textContent = error.message;
-                    errorElement.style.display = 'block';
-                });
-        }
-
-        // Register function
-        function register() {
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const errorElement = document.getElementById('registerError');
-            
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    errorElement.textContent = error.message;
-                    errorElement.style.display = 'block';
-                });
-        }
-
-        // Logout function
-        function logout() {
-            firebase.auth().signOut();
-        }
-    </script>
-</head>
-<body>
-    <div class="container">
 
         <!-- Main Content (Initially Hidden) -->
-        <div id="mainContent">
-            <h1>🎲 BlackyJacky 🎲</h1>
+           <h1>🎲 BlackyJacky 🎲</h1>
             
             <div class="input-group">
                 <label>Initial Bankroll: $</label>
@@ -734,6 +654,77 @@
             }
 
             alert(recommendationText);
+        }
+    </script>
+
+    <script>
+        // Initialize Firebase with your config
+        const firebaseConfig = {
+            apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
+    authDomain: "blackyjacky-7ec67.firebaseapp.com",
+    projectId: "blackyjacky-7ec67",
+    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
+    messagingSenderId: "72969183815",
+    appId: "1:72969183815:web:2b075f407839a7176d0762",
+    measurementId: "G-KVC53GB5TC"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        // Auth state observer
+        firebase.auth().onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                document.getElementById('authContent').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+            } else {
+                // User is signed out
+                document.getElementById('authContent').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'none';
+            }
+        });
+
+        // Toggle between login and register forms
+        function toggleAuth() {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            if (loginForm.style.display === 'none') {
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+            } else {
+                loginForm.style.display = 'none';
+                registerForm.style.display = 'block';
+            }
+        }
+
+        // Login function
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorElement = document.getElementById('loginError');
+            
+            firebase.auth().signInWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    errorElement.textContent = error.message;
+                    errorElement.style.display = 'block';
+                });
+        }
+
+        // Register function
+        function register() {
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const errorElement = document.getElementById('registerError');
+            
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .catch((error) => {
+                    errorElement.textContent = error.message;
+                    errorElement.style.display = 'block';
+                });
+        }
+
+        // Logout function
+        function logout() {
+            firebase.auth().signOut();
         }
     </script>
 </body>
