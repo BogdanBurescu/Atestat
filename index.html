@@ -1,6 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
+	  <title>Homepage</title>
+  <!-- Add Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
+
+  <script>
+    // Initialize Firebase with your project's config
+    var firebaseConfig = {
+        apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
+    authDomain: "blackyjacky-7ec67.firebaseapp.com",
+    projectId: "blackyjacky-7ec67",
+    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
+    messagingSenderId: "72969183815",
+    appId: "1:72969183815:web:2b075f407839a7176d0762",
+    measurementId: "G-KVC53GB5TC"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    // Function to check if a user is logged in or not
+    function checkAuthState() {
+      firebase.auth().onAuthStateChanged(function(user) {
+        if (!user) {
+          // User is not signed in, redirect to the login page
+          window.location.href = "login.html";
+        }
+      });
+    }
+  </script>
+</head>
+<body onload="checkAuthState()">
+
+	
     <meta charset="UTF-8">
     <title>BlackyJacky</title>
     <style>
@@ -147,17 +180,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- Password Section -->
-        <div id="passwordSection">
-            <h1>🎲 BlackyJacky 🎲</h1>
-            <div class="input-group">
-                <label>Enter Password:</label>
-                <input type="password" id="passwordInput">
-                <button onclick="checkPassword()">Login</button>
-                <div class="login-error" id="loginError">Incorrect password. Please try again.</div>
-            </div>
-        </div>
-
+      
         <!-- Main Content (Initially Hidden) -->
         <div id="mainContent">
             <h1>🎲 BlackyJacky 🎲</h1>
