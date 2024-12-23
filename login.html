@@ -4,94 +4,118 @@
     <title>Blackjack Strategy - Login</title>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-database.js"></script> <!-- Import Firebase Database -->
     <style>
-        /* Codul stilizat rămâne același */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        .login-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error-message {
+            color: #ff0000;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+        }
     </style>
 
     <script>
         // Initialize Firebase with your project's config
         var firebaseConfig = {
             apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
-            authDomain: "blackyjacky-7ec67.firebaseapp.com",
-            projectId: "blackyjacky-7ec67",
-            storageBucket: "blackyjacky-7ec67.firebasestorage.app",
-            messagingSenderId: "72969183815",
-            appId: "1:72969183815:web:2b075f407839a7176d0762",
-            measurementId: "G-KVC53GB5TC"
+    authDomain: "blackyjacky-7ec67.firebaseapp.com",
+    projectId: "blackyjacky-7ec67",
+    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
+    messagingSenderId: "72969183815",
+    appId: "1:72969183815:web:2b075f407839a7176d0762",
+    measurementId: "G-KVC53GB5TC"
         };
         firebase.initializeApp(firebaseConfig);
-        var database = firebase.database(); // Initialize Firebase Realtime Database
 
-        // Funcția pentru a genera un ID unic al dispozitivului (folosind localStorage)
-        function getDeviceID() {
-            if (!localStorage.getItem("deviceID")) {
-                // Crează un ID unic folosind timestamp și un număr aleatoriu
-                var deviceID = "device-" + new Date().getTime() + Math.floor(Math.random() * 10000);
-                localStorage.setItem("deviceID", deviceID);
-            }
-            return localStorage.getItem("deviceID");
-        }
-
-        // Verifică dacă dispozitivul curent este același cu cel salvat în Firebase
-        function checkDevice(user) {
-            var deviceID = getDeviceID();
-
-            // Verifică dacă utilizatorul are un dispozitiv asociat în Firebase
-            var userRef = database.ref('users/' + user.uid);
-            userRef.once('value').then(function(snapshot) {
-                var storedDeviceID = snapshot.val().deviceID;
-
-                if (storedDeviceID && storedDeviceID !== deviceID) {
-                    alert("Acest cont poate fi accesat doar de pe un singur dispozitiv.");
-                    firebase.auth().signOut(); // Deconectează utilizatorul
-                    window.location.href = "login.html"; // Redirecționează la login
-                } else {
-                    // Dacă e OK, continuă
-                    //alert(storedDeviceID);
-                    //alert(deviceID);
-                    alert("Acest cont poate fi accesat doar de pe un singur dispozitiv.");
-                    // window.location.href = "index.html";
+        // Function to check if a user is logged in or not
+        function checkAuthState() {
+            firebase.auth().onAuthStateChanged(function(user) {
+                if (user) {
+                    // User is signed in, proceed to the website
+                    window.location.href = "index.html";
                 }
             });
         }
 
-        // Funcția de autentificare
+        // Function to handle the login form submission
         function login() {
             var email = document.getElementById("email").value;
             var password = document.getElementById("password").value;
             var errorDiv = document.getElementById("error-message");
             
-            // Arată starea de încărcare
+            // Show loading state
             document.getElementById("login-button").disabled = true;
             document.getElementById("login-button").textContent = "Logging in...";
 
             firebase.auth().signInWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-                    var user = userCredential.user;
-
-                    // Verifică dispozitivul curent
-                    checkDevice(user);
-
-                    // Dacă este prima dată când se loghează, salvează deviceID
-                    var deviceID = getDeviceID();
-                    var userRef = database.ref('users/' + user.uid);
-
-                    userRef.once('value').then(function(snapshot) {
-                        if (!snapshot.exists()) {
-                            // Dacă nu există încă un dispozitiv salvat pentru utilizator, salvează-l
-                            userRef.set({
-                                deviceID: deviceID
-                            });
-                        }
-                    });
-
+                .then(function() {
+                    // Login successful, redirect to the homepage
+                    window.location.href = "index.html";
                 })
                 .catch(function(error) {
+                    // Handle errors here
                     var errorMessage = error.message;
                     errorDiv.textContent = errorMessage;
                     errorDiv.style.display = "block";
                     
+                    // Reset button state
                     document.getElementById("login-button").disabled = false;
                     document.getElementById("login-button").textContent = "Login";
                 });
