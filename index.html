@@ -712,7 +712,7 @@
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .catch((error) => {
 		    if(error.message[0]=='{')
-		        errorElement.textContent = "Incorrect password";
+		        errorElement.textContent = "Incorrect email or password";
 		    else
                     	errorElement.textContent = error.message;
                     errorElement.style.display = 'block';
