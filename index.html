@@ -673,61 +673,77 @@
         };
         firebase.initializeApp(firebaseConfig);
 
+        // Initialize Firestore
+        const db = firebase.firestore();
+
+        // Function to generate device ID (same as in login.html)
+        function generateDeviceId() {
+            const userAgent = navigator.userAgent;
+            const platform = navigator.platform;
+            const screenResolution = `${window.screen.width}x${window.screen.height}`;
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            
+            const deviceString = `${userAgent}-${platform}-${screenResolution}-${timeZone}`;
+            let hash = 0;
+            for (let i = 0; i < deviceString.length; i++) {
+                const char = deviceString.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return hash.toString();
+        }
+
+        // Function to check device authorization
+        async function checkDeviceAuthorization(user) {
+            const deviceId = generateDeviceId();
+            const userRef = db.collection('users').doc(user.uid);
+            
+            try {
+                const doc = await userRef.get();
+                if (!doc.exists) {
+                    // This shouldn't happen normally since the device should be registered at login
+                    await userRef.set({
+                        email: user.email,
+                        authorizedDevice: deviceId,
+                        firstLogin: new Date()
+                    });
+                    return true;
+                } else {
+                    return doc.data().authorizedDevice === deviceId;
+                }
+            } catch (error) {
+                console.error("Error checking device authorization:", error);
+                return false;
+            }
+        }
+
         // Auth state observer
-        firebase.auth().onAuthStateChanged((user) => {
+        firebase.auth().onAuthStateChanged(async function(user) {
             if (user) {
-                // User is signed in
-                document.getElementById('authContent').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
+                const isAuthorized = await checkDeviceAuthorization(user);
+                if (!isAuthorized) {
+                    // Device not authorized, logout and redirect to login page
+                    const errorDiv = document.getElementById("error-message");
+                    errorDiv.textContent = "This device is not authorized. Please use your registered device.";
+                    errorDiv.style.display = "block";
+                    await firebase.auth().signOut();
+                    setTimeout(() => {
+                        window.location.href = "login.html";
+                    }, 2000);
+                }
             } else {
-                // User is signed out
-                document.getElementById('authContent').style.display = 'block';
-                document.getElementById('mainContent').style.display = 'none';
+                // User is not logged in, redirect to login page
+                window.location.href = "login.html";
             }
         });
 
-        // Toggle between login and register forms
-        function toggleAuth() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-            }
-        }
-
-        // Login function
-        function login() {
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const errorElement = document.getElementById('loginError');
-            
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    errorElement.textContent = error.message;
-                    errorElement.style.display = 'block';
-                });
-        }
-
-        // Register function
-        function register() {
-            const email = document.getElementById('registerEmail').value;
-            const password = document.getElementById('registerPassword').value;
-            const errorElement = document.getElementById('registerError');
-            
-            firebase.auth().createUserWithEmailAndPassword(email, password)
-                .catch((error) => {
-                    errorElement.textContent = error.message;
-                    errorElement.style.display = 'block';
-                });
-        }
-
         // Logout function
         function logout() {
-            firebase.auth().signOut();
+            firebase.auth().signOut().then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Error signing out: ", error);
+            });
         }
     </script>
 </body>
