@@ -187,8 +187,8 @@
                     <input type="number" id="otherPlayersCard" class="card-input" min="2" max="11">
                     <div class="action-group">
                         <button onclick="addOtherPlayerCard()">Add Card</button>
-                        <button onclick="finishOtherPlayers()">Finish Other Players</button>
-                        <button onclick="resetOtherPlayers()">Reset Other Players</button>
+                   <!-- <button onclick="finishOtherPlayers()">Finish Other Players</button> -->
+                   <!-- <button onclick="resetOtherPlayers()">Reset Other Players</button> -->
                     </div>
                 </div>
 
@@ -383,6 +383,7 @@
             }
         }
 
+/*
         function resetOtherPlayers() {
             document.getElementById('otherPlayersCard').disabled = false;
             state.otherPlayersCards = [];
@@ -393,6 +394,7 @@
             document.getElementById('otherPlayersCard').disabled = true;
             alert("Ready for dealer's final cards");
         }
+*/
 
 	document.getElementById('dealerFinalCard').addEventListener('keypress', function(event) {
     		if (event.key === 'Enter') {
