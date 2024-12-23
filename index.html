@@ -664,42 +664,73 @@
         // Initialize Firebase with your config
         const firebaseConfig = {
             apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
-    authDomain: "blackyjacky-7ec67.firebaseapp.com",
-    projectId: "blackyjacky-7ec67",
-    storageBucket: "blackyjacky-7ec67.firebasestorage.app",
-    messagingSenderId: "72969183815",
-    appId: "1:72969183815:web:2b075f407839a7176d0762",
-    measurementId: "G-KVC53GB5TC"
+            authDomain: "blackyjacky-7ec67.firebaseapp.com",
+            projectId: "blackyjacky-7ec67",
+            storageBucket: "blackyjacky-7ec67.firebasestorage.app",
+            messagingSenderId: "72969183815",
+            appId: "1:72969183815:web:2b075f407839a7176d0762",
+            measurementId: "G-KVC53GB5TC"
         };
         firebase.initializeApp(firebaseConfig);
+        const database = firebase.database(); // Initialize Firebase Realtime Database
 
-        // Auth state observer
+        // Funcția de a crea un ID unic pentru dispozitiv (folosind localStorage)
+        function getDeviceID() {
+            if (!localStorage.getItem("deviceID")) {
+                // Crează un ID unic folosind timestamp și un număr aleatoriu
+                var deviceID = "device-" + new Date().getTime() + Math.floor(Math.random() * 10000);
+                localStorage.setItem("deviceID", deviceID);
+            }
+            return localStorage.getItem("deviceID");
+        }
+
+        // Verifică dacă dispozitivul curent este același cu cel salvat în Firebase
+        function checkDevice(user) {
+            var deviceID = getDeviceID();
+
+            // Verifică dacă utilizatorul are un dispozitiv asociat în Firebase
+            var userRef = database.ref('users/' + user.uid);
+            userRef.once('value').then(function(snapshot) {
+                var storedDeviceID = snapshot.val().deviceID;
+
+                if (storedDeviceID && storedDeviceID !== deviceID) {
+                    alert("Acest cont poate fi accesat doar de pe un singur dispozitiv.");
+                    firebase.auth().signOut(); // Deconectează utilizatorul
+                    window.location.href = "login.html"; // Redirecționează la login
+                } else {
+                    // Dacă e OK, continuă
+                    document.getElementById('authContent').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                }
+            });
+        }
+
+        // Observator de stare de autentificare
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                // User is signed in
-                document.getElementById('authContent').style.display = 'none';
-                document.getElementById('mainContent').style.display = 'block';
+                // Verifică dispozitivul
+                checkDevice(user);
+
+                // Dacă este prima dată când se loghează, salvează deviceID
+                var deviceID = getDeviceID();
+                var userRef = database.ref('users/' + user.uid);
+
+                userRef.once('value').then(function(snapshot) {
+                    if (!snapshot.exists()) {
+                        // Dacă nu există încă un dispozitiv salvat pentru utilizator, salvează-l
+                        userRef.set({
+                            deviceID: deviceID
+                        });
+                    }
+                });
             } else {
-                // User is signed out
+                // Utilizatorul nu este autentificat
                 document.getElementById('authContent').style.display = 'block';
                 document.getElementById('mainContent').style.display = 'none';
             }
         });
 
-        // Toggle between login and register forms
-        function toggleAuth() {
-            const loginForm = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
-            if (loginForm.style.display === 'none') {
-                loginForm.style.display = 'block';
-                registerForm.style.display = 'none';
-            } else {
-                loginForm.style.display = 'none';
-                registerForm.style.display = 'block';
-            }
-        }
-
-        // Login function
+        // Funcția de autentificare
         function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
@@ -712,7 +743,7 @@
                 });
         }
 
-        // Register function
+        // Funcția de înregistrare
         function register() {
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
@@ -725,7 +756,7 @@
                 });
         }
 
-        // Logout function
+        // Funcția de logout
         function logout() {
             firebase.auth().signOut();
         }
