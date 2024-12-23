@@ -185,7 +185,7 @@
                 <div class="input-group">
                     <h3>👥 Other Players' Cards</h3>
                     <input type="number" id="otherPlayersCard" class="card-input" min="2" max="11">
-                    <div class="action-group">
+                   <!-- <div class="action-group"> -->
                         <button onclick="addOtherPlayerCard()">Add Card</button>
                    <!-- <button onclick="finishOtherPlayers()">Finish Other Players</button> -->
                    <!-- <button onclick="resetOtherPlayers()">Reset Other Players</button> -->
@@ -247,7 +247,9 @@
         function initializeGame() {
             state.bankroll = parseInt(document.getElementById('initialBankroll').value);
             state.numDecks = parseInt(document.getElementById('numDecks').value);
-            const unitPercentage = parseInt(document.getElementById('unitPercentage').value);
+            state.cardCount = 0;
+	    const trueCount = 0;
+	    const unitPercentage = parseInt(document.getElementById('unitPercentage').value);
     
    	// Calculate state.unit based on the percentage of state.bankroll
    	 if (unitPercentage && unitPercentage > 0 && unitPercentage <= 100) {
