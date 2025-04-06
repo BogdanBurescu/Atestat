@@ -224,6 +224,8 @@
 
     <script>
 
+	// Esti un terminat daca imi copiezi codul
+	    
         let state = {
             bankroll: 0,
             numDecks: 0,
@@ -240,10 +242,10 @@
             isSplit: false,
             isDoubled: false,
             hasAce: false,
+	    hasAce21: false,
             unit: 0
         };
 
-        // [Rest of your original JavaScript code remains exactly the same]
         function initializeGame() {
             state.bankroll = parseInt(document.getElementById('initialBankroll').value);
             state.numDecks = parseInt(document.getElementById('numDecks').value);
@@ -251,10 +253,9 @@
 	    const trueCount = 0;
 	    const unitPercentage = parseInt(document.getElementById('unitPercentage').value);
     
-   	// Calculate state.unit based on the percentage of state.bankroll
    	 if (unitPercentage && unitPercentage > 0 && unitPercentage <= 100) {
         	const percentageValue = state.bankroll * (unitPercentage / 100);
-        	state.unit = Math.floor(percentageValue / 10) * 10;  // Make sure it's a multiple of 10
+        	state.unit = Math.floor(percentageValue / 10) * 10;
     	} else {
         	alert("Please enter a valid percentage (1-100).");
         	return;
@@ -269,7 +270,6 @@
             updateGameStatus();
         }
 
-        // [Continue with ALL the rest of your original JavaScript functions exactly as they were]
         function updateGameStatus() {
             const trueCount = calculateTrueCount();
             let recommendedBet = state.unit;
@@ -284,8 +284,8 @@
 
             document.getElementById('gameStatus').innerHTML = `
                 <strong>Current Bankroll:</strong> $${state.bankroll.toLocaleString()}<br>
-                <strong>Running Count:</strong> ${state.cardCount}<br>
-                <strong>True Count:</strong> ${trueCount}<br>
+                <strong>Running Count:</strong> ${state.cardCount.toFixed(2)}<br>
+                <strong>True Count:</strong> ${trueCount.toFixed(2)}<br>
                 <strong>Recommended Bet:</strong> $${recommendedBet.toLocaleString()}
             `;
         }
@@ -313,8 +313,8 @@
 
 	document.getElementById('dealerCard').addEventListener('keypress', function(event) {
     		if (event.key === 'Enter') {
-        	event.preventDefault();  // Prevent default action
-        	setDealerCard();         // Call the setDealerCard function
+        	event.preventDefault();
+        	setDealerCard();
     		}
 	});
 
@@ -333,15 +333,15 @@
 
 	document.getElementById('playerCard1').addEventListener('keypress', function(event) {
     		if (event.key === 'Enter') {
-        	event.preventDefault();  // Prevent default action
-        	setPlayerCards();        // Call the setPlayerCards function
+        	event.preventDefault();
+        	setPlayerCards();
     		}
 	});
 
 	document.getElementById('playerCard2').addEventListener('keypress', function(event) {
     		if (event.key === 'Enter') {
-        	event.preventDefault();  // Prevent default action
-        	setPlayerCards();        // Call the setPlayerCards function
+        	event.preventDefault();
+        	setPlayerCards();
     		}
 	});
 
@@ -369,10 +369,9 @@
         }
 
 	document.getElementById('otherPlayersCard').addEventListener('keypress', function(event) {
-   	 	// Check if the pressed key is the "Enter" key (keyCode 13)
-    		if (event.key === 'Enter') {
-        	event.preventDefault(); // Prevent form submission or other default actions
-        	addOtherPlayerCard();   // Call the addOtherPlayerCard function
+   	 	if (event.key === 'Enter') {
+        	event.preventDefault();
+        	addOtherPlayerCard();
     		}
 	});
 
@@ -400,8 +399,8 @@
 
 	document.getElementById('dealerFinalCard').addEventListener('keypress', function(event) {
     		if (event.key === 'Enter') {
-        	event.preventDefault();  // Prevent default action
-        	addDealerFinalCard();    // Call the addDealerFinalCard function
+        	event.preventDefault();
+        	addDealerFinalCard();
     		}
 	});
 
@@ -488,7 +487,6 @@
             const dealerTotal = calculateTotal(state.dealerCards);
 
             if (state.isSplit) {
-                // Handle split hands
                 state.splitHands.forEach((hand, index) => {
                     const splitTotal = calculateTotal(hand);
                     if (splitTotal <= 21 && (dealerTotal > 21 || splitTotal > dealerTotal)) {
@@ -502,7 +500,6 @@
                     }
                 });
             } else {
-                // Handle regular hand
                 if (playerTotal <= 21) {
                     if (dealerTotal > 21) {
                         alert("Dealer busts! You win!");
@@ -519,7 +516,6 @@
                 }
             }
 
-            // Reset for next hand
             state.playerCards = [];
             state.dealerCards = [];
             state.splitHands = [];
@@ -535,6 +531,7 @@
         function calculateTotal(cards) {
             let total = 0;
             let aces = 0;
+	    let hasAce21 = 0;
             
             for (const card of cards) {
                 if (card === 11) aces++;
@@ -544,11 +541,35 @@
             while (total > 21 && aces > 0) {
                 total -= 10;
                 aces--;
+		hasAce21 = true;
             }
             
             return total;
         }
 
+
+        function calculateAce21(cards) {
+            let total = 0;
+            let aces = 0;
+	    let hasAce21 = 0;
+	    let total2 = 0;
+
+            for (const card of cards) {
+                if (card === 11) aces++;
+		else total2 += card;
+                total += card === 11 ? 11 : card;
+            }
+		
+            while (total > 21 && aces > 0) {
+                total -= 10;
+                aces--;
+		if (total2 > 10)
+		    hasAce21 = true;
+            }
+
+            return hasAce21;
+        }
+	    
         function isValidCard(card) {
             return card >= 2 && card <= 11;
         }
@@ -556,10 +577,9 @@
         function calculateAction(cards, dealerCard) {
             const total = calculateTotal(cards);
             const hasAce = cards.includes(11);
+	    const hasAce21 = calculateAce21(cards);
             
-            // Basic strategy logic (simplified version of your C++ logic)
             if (cards.length === 2 && cards[0] === cards[1]) {
-                // Split decisions
                 if (cards[0] === 11 || cards[0] === 8) return 'split';
                 if (cards[0] === 9 && dealerCard !== 7 && dealerCard !== 10 && dealerCard !== 11) return 'split';
                 if (cards[0] === 7 && dealerCard <= 7) return 'split';
@@ -568,8 +588,7 @@
                 if ((cards[0] === 2 || cards[0] === 3) && dealerCard <= 7) return 'split';
             }
 
-            if (hasAce) {
-                // Soft totals
+            if (hasAce && !hasAce21) {
                 if (total >= 19) return 'stand';
                 if (total === 18) {
                     if (dealerCard >= 9) return 'hit';
@@ -589,7 +608,6 @@
                     return 'hit';
                 }
             } else {
-                // Hard totals
                 if (total >= 17) return 'stand';
                 if (total === 16) {
                     if (dealerCard >= 7) return 'hit';
@@ -626,11 +644,10 @@
                 if (total <= 8) return 'hit';
             }
 
-            return 'hit'; // Default action
+            return 'hit';
         }
 
         function highlightRecommendedAction(action) {
-            // Reset all buttons
             document.getElementById('hitButton').classList.remove('disabled');
             document.getElementById('standButton').classList.remove('disabled');
             document.getElementById('doubleButton').classList.remove('disabled');
@@ -641,13 +658,11 @@
             document.getElementById('doubleButton').style.backgroundColor = '#4CAF50';
             document.getElementById('splitButton').style.backgroundColor = '#4CAF50';
 
-            // Disable inappropriate actions
             if (state.playerCards.length > 2) {
                 document.getElementById('doubleButton').classList.add('disabled');
                 document.getElementById('splitButton').classList.add('disabled');
             }
 
-            // Highlight recommended action
             let recommendationText = "Recommended action: " + action.toUpperCase();
             
             if (action === 'hit') {
@@ -665,7 +680,6 @@
     </script>
 
     <script>
-        // Initialize Firebase with your config
         const firebaseConfig = {
             apiKey: "AIzaSyBhtw8H7hqFeGyLHTTHDd-VgXk1a9w4Lbo",
     authDomain: "blackyjacky-7ec67.firebaseapp.com",
@@ -677,21 +691,17 @@
         };
         firebase.initializeApp(firebaseConfig);
 
-        // Auth state observer
         firebase.auth().onAuthStateChanged((user) => {
             if (user) {
-                // User is signed in
                 document.getElementById('authContent').style.display = 'none';
                 document.getElementById('mainContent').style.display = 'block';
             } else {
-                // User is signed out
                 document.getElementById('authContent').style.display = 'block';
                 document.getElementById('mainContent').style.display = 'none';
             }
         });
 
-        // Toggle between login and register forms
-        function toggleAuth() {
+    function toggleAuth() {
             const loginForm = document.getElementById('loginForm');
             const registerForm = document.getElementById('registerForm');
             if (loginForm.style.display === 'none') {
@@ -703,7 +713,6 @@
             }
         }
 
-        // Login function
         function login() {
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
@@ -719,7 +728,6 @@
                 });
         }
 
-        // Register function
         function register() {
             const email = document.getElementById('registerEmail').value;
             const password = document.getElementById('registerPassword').value;
@@ -732,7 +740,6 @@
                 });
         }
 
-        // Logout function
         function logout() {
             firebase.auth().signOut();
         }
