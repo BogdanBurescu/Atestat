@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Atestat - Login</title>
+    <title>Aplicarea strategiilor in jocul de Blackjack - Login</title>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.5/firebase-auth.js"></script>
     <style>
@@ -131,7 +131,7 @@
 </head>
 <body onload="checkAuthState()">
     <div class="login-container">
-        <h1>Atestat</h1>
+        <h1>Aplicarea strategiilor in jocul de Blackjack</h1>
         <form onsubmit="event.preventDefault();">
             <div class="form-group">
                 <label for="email">Email</label>
@@ -142,6 +142,14 @@
                 <input type="password" id="password" required onkeypress="handleKeyPress(event)">
             </div>
             <button type="button" id="login-button" onclick="login()">Login</button>
+            <p style="margin-top: 15px; font-size: 14px; color: #555; text-align: center;">
+            Dacă ai deja cont, te poți loga folosind datele tale.<br><br>
+            Dacă nu ai cont, trimite un email la<br>
+            <strong>cont.asjb.liis@gmail.com</strong><br><br>
+            sau folosește contul de test:<br>
+            <strong>Email:</strong> test@gmail.com<br>
+            <strong>Parolă:</strong> test123
+            </p>
             <div id="error-message" class="error-message"></div>
         </form>
     </div>
